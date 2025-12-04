@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: media-service
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: chat-app
+
+server:
+  port: 8083
