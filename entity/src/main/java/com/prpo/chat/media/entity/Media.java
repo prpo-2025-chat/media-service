@@ -22,7 +22,8 @@ public class Media {
 
     private long size;
 
-    private String storagePath;
+
+    private String gridFsFileId;
 
     @CreatedDate
     private Date uploadedAt;
@@ -43,7 +44,7 @@ public class Media {
     public String getContentType() { return contentType; }
     public MediaType getMediaType() { return mediaType; }
     public long getSize() { return size; }
-    public String getStoragePath() { return storagePath; }
+    public String getGridFsFileId() { return gridFsFileId; }
     public Date getUploadedAt() { return uploadedAt; }
 
     public void setId(String id) { this.id = id; }
@@ -52,6 +53,6 @@ public class Media {
     public void setContentType(String contentType) { this.contentType = contentType; }
     public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
     public void setSize(long size) { this.size = size; }
-    public void setStoragePath(String storagePath) { this.storagePath = storagePath; }
+    public void setGridFsFileId(String gridFsFileId) { this.gridFsFileId = gridFsFileId; }
     public void setUploadedAt(Date uploadedAt) { this.uploadedAt = uploadedAt; }
 }

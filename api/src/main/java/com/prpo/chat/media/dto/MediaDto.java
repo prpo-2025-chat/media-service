@@ -13,7 +13,7 @@ public class MediaDto {
     private String contentType;
     private MediaType mediaType;
     private long size;
-    private String storagePath;
+    private String gridFsFileId;
     private Date uploadedAt;
 
     public MediaDto() {}
@@ -25,7 +25,7 @@ public class MediaDto {
         this.contentType = media.getContentType();
         this.mediaType = media.getMediaType();
         this.size = media.getSize();
-        this.storagePath = media.getStoragePath();
+        this.gridFsFileId = media.getGridFsFileId();
         this.uploadedAt = media.getUploadedAt();
     }
 
@@ -35,7 +35,7 @@ public class MediaDto {
     public String getContentType() { return contentType; }
     public MediaType getMediaType() { return mediaType; }
     public long getSize() { return size; }
-    public String getStoragePath() { return storagePath; }
+    public String getGridFsFileId() { return gridFsFileId; }
     public Date getUploadedAt() { return uploadedAt; }
 
     public void setId(String id) { this.id = id; }
@@ -44,6 +44,6 @@ public class MediaDto {
     public void setContentType(String contentType) { this.contentType = contentType; }
     public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
     public void setSize(long size) { this.size = size; }
-    public void setStoragePath(String storagePath) { this.storagePath = storagePath; }
+    public void setGridFsFileId(String gridFsFileId) { this.gridFsFileId = gridFsFileId; }
     public void setUploadedAt(Date uploadedAt) { this.uploadedAt = uploadedAt; }
 }
