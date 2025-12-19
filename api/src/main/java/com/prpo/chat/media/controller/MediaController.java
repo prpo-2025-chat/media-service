@@ -31,7 +31,7 @@ public class MediaController {
         this.mediaService = mediaService;
     }
 
-    @PostMapping("/upload")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MediaDto> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam("uploaderId") String uploaderId,
