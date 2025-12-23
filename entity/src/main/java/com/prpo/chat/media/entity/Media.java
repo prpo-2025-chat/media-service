@@ -23,7 +23,7 @@ public class Media {
     private long size;
 
 
-    private String gridFsFileId;
+    private String s3Key;
 
     @CreatedDate
     private Date uploadedAt;
@@ -44,7 +44,7 @@ public class Media {
     public String getContentType() { return contentType; }
     public MediaType getMediaType() { return mediaType; }
     public long getSize() { return size; }
-    public String getGridFsFileId() { return gridFsFileId; }
+    public String getS3Key() { return s3Key; }
     public Date getUploadedAt() { return uploadedAt; }
 
     public void setId(String id) { this.id = id; }
@@ -53,6 +53,6 @@ public class Media {
     public void setContentType(String contentType) { this.contentType = contentType; }
     public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
     public void setSize(long size) { this.size = size; }
-    public void setGridFsFileId(String gridFsFileId) { this.gridFsFileId = gridFsFileId; }
+    public void setS3Key(String s3Key) { this.s3Key = s3Key; }
     public void setUploadedAt(Date uploadedAt) { this.uploadedAt = uploadedAt; }
 }

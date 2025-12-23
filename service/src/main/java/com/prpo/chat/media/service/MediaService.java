@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.stereotype.Service;
 
 import com.prpo.chat.media.entity.Media;
@@ -15,31 +14,31 @@ import com.prpo.chat.media.repository.MediaRepository;
 public class MediaService {
 
     private final MediaRepository mediaRepository;
-    private final GridFsService gridFsService;
+    private final S3Service s3Service;
 
-    public MediaService(MediaRepository mediaRepository, GridFsService gridFsService) {
+    public MediaService(MediaRepository mediaRepository, S3Service s3Service) {
         this.mediaRepository = mediaRepository;
-        this.gridFsService = gridFsService;
+        this.s3Service = s3Service;
     }
 
     public Media upload(String uploaderId, String filename, String contentType, 
                         MediaType mediaType, long size, InputStream inputStream) {
-        String gridFsFileId = gridFsService.storeFile(inputStream, filename, contentType);
+        String s3Key = s3Service.uploadFile(inputStream, filename, contentType, size);
         
         Media media = new Media(uploaderId, filename, contentType, mediaType, size);
-        media.setGridFsFileId(gridFsFileId);
+        media.setS3Key(s3Key);
         
         return mediaRepository.save(media);
     }
 
-    public GridFsResource download(String mediaId) {
+    public S3Service.S3ObjectInputStream download(String mediaId) {
         Optional<Media> mediaOpt = mediaRepository.findById(mediaId);
         if (mediaOpt.isEmpty()) {
             return null;
         }
         
         Media media = mediaOpt.get();
-        return gridFsService.getFile(media.getGridFsFileId());
+        return s3Service.downloadFile(media.getS3Key());
     }
 
     public Optional<Media> getById(String id) {
@@ -62,10 +61,11 @@ public class MediaService {
         Optional<Media> mediaOpt = mediaRepository.findById(id);
         if (mediaOpt.isPresent()) {
             Media media = mediaOpt.get();
-            if (media.getGridFsFileId() != null) {
-                gridFsService.deleteFile(media.getGridFsFileId());
+            if (media.getS3Key() != null) {
+                s3Service.deleteFile(media.getS3Key());
             }
             mediaRepository.deleteById(id);
         }
     }
 }
+

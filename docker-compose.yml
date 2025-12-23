@@ -5,10 +5,17 @@ services:
       - "8083:8083"
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/media_db
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?S3_ACCESS_KEY is required} # default: minioadmin
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?S3_SECRET_KEY is required} # default: minioadmin
+      S3_BUCKET: media
+      S3_REGION: us-east-1
     networks:
       - chat-net
     depends_on:
       - mongo
+      - minio
 
   mongo:
     image: mongo:7
@@ -19,8 +26,40 @@ services:
     networks:
       - chat-net
 
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?S3_SECRET_KEY is required}
+    volumes:
+      - media_minio_data:/data
+    networks:
+      - chat-net
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?S3_ACCESS_KEY is required}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?S3_SECRET_KEY is required}
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set myminio http://minio:9000 $S3_ACCESS_KEY $S3_SECRET_KEY;
+      mc mb myminio/media --ignore-existing;
+      exit 0;
+      "
+    networks:
+      - chat-net
+
 volumes:
   media_mongo_data:
+  media_minio_data:
 
 networks:
   chat-net:

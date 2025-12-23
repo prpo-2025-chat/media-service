@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +19,20 @@ import org.springframework.web.multipart.MultipartFile;
 import com.prpo.chat.media.dto.MediaDto;
 import com.prpo.chat.media.entity.Media;
 import com.prpo.chat.media.service.MediaService;
+import com.prpo.chat.media.service.S3Service;
 
 @RestController
 @RequestMapping("/media")
 public class MediaController {
 
-    private final MediaService mediaService;
+    private static final int URL_EXPIRATION_MINUTES = 60;
 
-    public MediaController(MediaService mediaService) {
+    private final MediaService mediaService;
+    private final S3Service s3Service;
+
+    public MediaController(MediaService mediaService, S3Service s3Service) {
         this.mediaService = mediaService;
+        this.s3Service = s3Service;
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -46,27 +50,34 @@ public class MediaController {
             file.getInputStream()
         );
         
-        return ResponseEntity.ok(new MediaDto(media));
+        String downloadUrl = s3Service.getPresignedUrl(media.getS3Key(), URL_EXPIRATION_MINUTES);
+        return ResponseEntity.ok(new MediaDto(media, downloadUrl));
     }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<InputStreamResource> download(@PathVariable String id) throws IOException {
-        GridFsResource resource = mediaService.download(id);
+        S3Service.S3ObjectInputStream s3Object = mediaService.download(id);
         
-        if (resource == null) {
+        if (s3Object == null) {
             return ResponseEntity.notFound().build();
         }
         
+        Media media = mediaService.getById(id).orElse(null);
+        String filename = media != null ? media.getFilename() : "download";
+        
         return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(resource.getContentType()))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-            .body(new InputStreamResource(resource.getInputStream()));
+            .contentType(MediaType.parseMediaType(s3Object.getContentType()))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+            .body(new InputStreamResource(s3Object.getInputStream()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<MediaDto> getById(@PathVariable String id) {
         return mediaService.getById(id)
-            .map(media -> ResponseEntity.ok(new MediaDto(media)))
+            .map(media -> {
+                String downloadUrl = s3Service.getPresignedUrl(media.getS3Key(), URL_EXPIRATION_MINUTES);
+                return ResponseEntity.ok(new MediaDto(media, downloadUrl));
+            })
             .orElse(ResponseEntity.notFound().build());
     }
 
@@ -74,7 +85,7 @@ public class MediaController {
     public ResponseEntity<List<MediaDto>> getByUploader(@PathVariable String uploaderId) {
         List<MediaDto> media = mediaService.getByUploaderId(uploaderId)
             .stream()
-            .map(MediaDto::new)
+            .map(m -> new MediaDto(m, s3Service.getPresignedUrl(m.getS3Key(), URL_EXPIRATION_MINUTES)))
             .toList();
         return ResponseEntity.ok(media);
     }
@@ -83,7 +94,7 @@ public class MediaController {
     public ResponseEntity<List<MediaDto>> getByType(@PathVariable com.prpo.chat.media.entity.MediaType mediaType) {
         List<MediaDto> media = mediaService.getByMediaType(mediaType)
             .stream()
-            .map(MediaDto::new)
+            .map(m -> new MediaDto(m, s3Service.getPresignedUrl(m.getS3Key(), URL_EXPIRATION_MINUTES)))
             .toList();
         return ResponseEntity.ok(media);
     }
@@ -92,7 +103,7 @@ public class MediaController {
     public ResponseEntity<List<MediaDto>> getAll() {
         List<MediaDto> media = mediaService.getAll()
             .stream()
-            .map(MediaDto::new)
+            .map(m -> new MediaDto(m, s3Service.getPresignedUrl(m.getS3Key(), URL_EXPIRATION_MINUTES)))
             .toList();
         return ResponseEntity.ok(media);
     }
@@ -103,3 +114,4 @@ public class MediaController {
         return ResponseEntity.noContent().build();
     }
 }
+

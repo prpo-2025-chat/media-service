@@ -13,20 +13,22 @@ public class MediaDto {
     private String contentType;
     private MediaType mediaType;
     private long size;
-    private String gridFsFileId;
+    private String s3Key;
     private Date uploadedAt;
+    private String downloadUrl;
 
     public MediaDto() {}
 
-    public MediaDto(Media media) {
+    public MediaDto(Media media, String downloadUrl) {
         this.id = media.getId();
         this.uploaderId = media.getUploaderId();
         this.filename = media.getFilename();
         this.contentType = media.getContentType();
         this.mediaType = media.getMediaType();
         this.size = media.getSize();
-        this.gridFsFileId = media.getGridFsFileId();
+        this.s3Key = media.getS3Key();
         this.uploadedAt = media.getUploadedAt();
+        this.downloadUrl = downloadUrl;
     }
 
     public String getId() { return id; }
@@ -35,8 +37,9 @@ public class MediaDto {
     public String getContentType() { return contentType; }
     public MediaType getMediaType() { return mediaType; }
     public long getSize() { return size; }
-    public String getGridFsFileId() { return gridFsFileId; }
+    public String getS3Key() { return s3Key; }
     public Date getUploadedAt() { return uploadedAt; }
+    public String getDownloadUrl() { return downloadUrl; }
 
     public void setId(String id) { this.id = id; }
     public void setUploaderId(String uploaderId) { this.uploaderId = uploaderId; }
@@ -44,6 +47,8 @@ public class MediaDto {
     public void setContentType(String contentType) { this.contentType = contentType; }
     public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
     public void setSize(long size) { this.size = size; }
-    public void setGridFsFileId(String gridFsFileId) { this.gridFsFileId = gridFsFileId; }
+    public void setS3Key(String s3Key) { this.s3Key = s3Key; }
     public void setUploadedAt(Date uploadedAt) { this.uploadedAt = uploadedAt; }
+    public void setDownloadUrl(String downloadUrl) { this.downloadUrl = downloadUrl; }
 }
+
